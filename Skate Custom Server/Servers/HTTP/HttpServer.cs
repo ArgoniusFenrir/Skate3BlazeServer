@@ -236,7 +236,19 @@ namespace Servers.HTTP
                                 case "GetOneContent":
                                     responseContent = await SkateReelEndpoint.GetOneContent(ctx);
                                     break;
+                                case "Infect":
+                                    // Always responds true so the game unlocks the Gone Viral trophy.
+                                    // The original EA implementation does not work like this.
+                                    using (var infectReader = new StreamReader(req.InputStream, Encoding.Latin1))
+                                    {
+                                        string infectBody = await infectReader.ReadToEndAsync();
+                                        ServerLogger.Log($"[Infect] {req.HttpMethod} {req.Url.AbsolutePath} body: {infectBody}");
+                                    }
+                                    responseContent = new XElement("BoolContainer", new XElement("value", "true")).ToString();
+                                    ServerLogger.Log($"[Infect] response: {res.StatusCode} {res.ContentType} body: {responseContent}");
+                                    break;
                                 default:
+                                    ServerLogger.Log($"[ASMX 404] {req.HttpMethod} {req.Url.AbsolutePath}");
                                     res.StatusCode = 404;
                                     break;
                             }
